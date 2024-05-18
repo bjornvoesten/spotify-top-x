@@ -2,18 +2,19 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use App\Actions\UpdateUserPopularArtists;
+use App\Actions\UpdateUserPopularTracks;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\Two\User;
+use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery\MockInterface;
 use SocialiteProviders\Spotify\Provider;
 use Tests\TestCase;
 
 class SpotifyTest extends TestCase
 {
-    use LazilyRefreshDatabase;
-
     /**
      * @throws \Throwable
      */
@@ -22,7 +23,7 @@ class SpotifyTest extends TestCase
         $provider = $this->partialMock(Provider::class);
         $provider
             ->shouldReceive('redirect')
-            ->andReturn(new RedirectResponse('/'));
+            ->andReturn(new RedirectResponse(route('personal')));
 
         Socialite::shouldReceive('driver')
             ->with('spotify')
@@ -32,11 +33,26 @@ class SpotifyTest extends TestCase
         $this
             ->get(route('spotify.redirect'))
             ->assertStatus(302)
-            ->assertRedirect();
+            ->assertRedirect(route('personal'));
     }
 
     public function test_callback_create(): void
     {
+        Http::fake([
+            'https://api.spotify.com/v1/me/top/tracks*' => Http::response(
+                json_decode(
+                    file_get_contents(__DIR__.'/../Fixtures/resources/spotify-tracks.json'),
+                    true, 512, JSON_THROW_ON_ERROR
+                )
+            ),
+            'https://api.spotify.com/v1/me/top/artists*' => Http::response(
+                json_decode(
+                    file_get_contents(__DIR__.'/../Fixtures/resources/spotify-artists.json'),
+                    true, 512, JSON_THROW_ON_ERROR
+                )
+            ),
+        ]);
+
         $data = $this->mockSpotifyUser();
 
         $provider = $this->mockSpotifyProvider();
@@ -49,7 +65,7 @@ class SpotifyTest extends TestCase
         $this
             ->get(route('spotify.callback'))
             ->assertStatus(302)
-            ->assertRedirect();
+            ->assertRedirect(route('personal'));
 
         $this->assertDatabaseHas('users', [
             'spotify_id' => $data->id,
@@ -64,7 +80,22 @@ class SpotifyTest extends TestCase
 
     public function test_callback_update(): void
     {
-        $user = \App\Models\User::factory()->create();
+        Http::fake([
+            'https://api.spotify.com/v1/me/top/tracks*' => Http::response(
+                json_decode(
+                    file_get_contents(__DIR__.'/../Fixtures/resources/spotify-tracks.json'),
+                    true, 512, JSON_THROW_ON_ERROR
+                )
+            ),
+            'https://api.spotify.com/v1/me/top/artists*' => Http::response(
+                json_decode(
+                    file_get_contents(__DIR__.'/../Fixtures/resources/spotify-artists.json'),
+                    true, 512, JSON_THROW_ON_ERROR
+                )
+            ),
+        ]);
+
+        $user = User::factory()->create();
 
         $data = $this->mockSpotifyUser(
             id: $user->spotify_id
@@ -87,7 +118,7 @@ class SpotifyTest extends TestCase
         $this
             ->get(route('spotify.callback'))
             ->assertStatus(302)
-            ->assertRedirect();
+            ->assertRedirect(route('personal'));
 
         $this->assertDatabaseCount('users', 1);
         $this->assertDatabaseHas('users', [
@@ -103,19 +134,19 @@ class SpotifyTest extends TestCase
 
     public function test_logout(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this
             ->actingAs($user)
             ->get(route('spotify.logout'))
             ->assertStatus(302)
-            ->assertRedirect();
+            ->assertRedirect(route('home'));
 
         $this->assertGuest();
     }
 
-    protected function mockSpotifyUser(string $id = null): User | MockInterface
+    protected function mockSpotifyUser(?string $id = null): SocialiteUser|MockInterface
     {
-        $user = $this->partialMock(User::class);
+        $user = $this->partialMock(SocialiteUser::class);
 
         $user->id = $id ?: fake()->userName();
         $user->name = fake()->name();
@@ -126,12 +157,12 @@ class SpotifyTest extends TestCase
         return $user;
     }
 
-    protected function mockSpotifyProvider(): Provider | MockInterface
+    protected function mockSpotifyProvider(): Provider|MockInterface
     {
         $provider = $this->partialMock(Provider::class);
         $provider
             ->shouldReceive('redirect')
-            ->andReturn(new RedirectResponse('/'));
+            ->andReturn(new RedirectResponse('personal'));
 
         Socialite::shouldReceive('driver')
             ->with('spotify')
@@ -139,5 +170,69 @@ class SpotifyTest extends TestCase
             ->once();
 
         return $provider;
+    }
+
+    public function test_update_user_popular_artists(): void
+    {
+        $user = User::factory()->create();
+
+        $this->assertDatabaseEmpty('artists');
+        $this->assertDatabaseEmpty('artist_user');
+
+        Http::fake([
+            'https://api.spotify.com/v1/me/top/artists*' => Http::response(
+                json_decode(
+                    file_get_contents(__DIR__.'/../Fixtures/resources/spotify-artists.json'),
+                    true, 512, JSON_THROW_ON_ERROR
+                )
+            ),
+        ]);
+
+        UpdateUserPopularArtists::run(user: $user);
+
+        $this->assertDatabaseCount('artists', 10);
+        $this->assertDatabaseHas('artists', [
+            'spotify_id' => '1g9nyCbUH0kbNgXAsw7tUB',
+            'name' => 'Bankzitters',
+            'uri' => 'spotify:artist:1g9nyCbUH0kbNgXAsw7tUB',
+        ]);
+        $this->assertDatabaseCount('artist_user', 10);
+        $this->assertNotNull(
+            $user->artists()
+                ->where('spotify_id', '1g9nyCbUH0kbNgXAsw7tUB')
+                ->first()
+        );
+    }
+
+    public function test_update_user_popular_tracks(): void
+    {
+        Http::fake([
+            'https://api.spotify.com/v1/me/top/tracks*' => Http::response(
+                json_decode(
+                    file_get_contents(__DIR__.'/../Fixtures/resources/spotify-tracks.json'),
+                    true, 512, JSON_THROW_ON_ERROR
+                )
+            ),
+        ]);
+
+        $user = User::factory()->create();
+
+        $this->assertDatabaseEmpty('tracks');
+        $this->assertDatabaseEmpty('track_user');
+
+        UpdateUserPopularTracks::run(user: $user);
+
+        $this->assertDatabaseCount('tracks', 10);
+        $this->assertDatabaseHas('tracks', [
+            'spotify_id' => '4eqKoFDvkBK96nYgUTXUWp',
+            'name' => 'Cupido',
+            'uri' => 'spotify:track:4eqKoFDvkBK96nYgUTXUWp',
+        ]);
+        $this->assertDatabaseCount('track_user', 10);
+        $this->assertNotNull(
+            $user->tracks()
+                ->where('spotify_id', '4eqKoFDvkBK96nYgUTXUWp')
+                ->first()
+        );
     }
 }

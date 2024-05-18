@@ -1,0 +1,46 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularArtists.php
+
+		-
+			message: "#^Method App\\\\Actions\\\\UpdateUserPopularTracks\\:\\:artists\\(\\) has parameter \\$items with generic class Illuminate\\\\Support\\\\Collection but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularTracks.php
+
+		-
+			message: "#^Method App\\\\Actions\\\\UpdateUserPopularTracks\\:\\:trackArtistPivots\\(\\) has parameter \\$items with generic class Illuminate\\\\Support\\\\Collection but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularTracks.php
+
+		-
+			message: "#^Method App\\\\Actions\\\\UpdateUserPopularTracks\\:\\:trackArtistPivots\\(\\) has parameter \\$tracks with generic class Illuminate\\\\Support\\\\Collection but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularTracks.php
+
+		-
+			message: "#^Method App\\\\Actions\\\\UpdateUserPopularTracks\\:\\:tracks\\(\\) has parameter \\$items with generic class Illuminate\\\\Support\\\\Collection but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularTracks.php
+
+		-
+			message: "#^Method App\\\\Actions\\\\UpdateUserPopularTracks\\:\\:tracks\\(\\) return type with generic class Illuminate\\\\Support\\\\Collection does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularTracks.php
+
+		-
+			message: "#^Unable to resolve the template type TFlatMapKey in call to method Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\),mixed\\>\\:\\:flatMap\\(\\)$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularTracks.php
+
+		-
+			message: "#^Unable to resolve the template type TFlatMapValue in call to method Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\),mixed\\>\\:\\:flatMap\\(\\)$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularTracks.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: app/Actions/UpdateUserPopularTracks.php

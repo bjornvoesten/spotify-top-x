@@ -16,6 +16,7 @@ class SpotifyController extends Controller
         /** @var \SocialiteProviders\Spotify\Provider $provider */
         $provider = Socialite::driver('spotify');
         $provider->scopes(['user-read-email', 'user-top-read']);
+
         return $provider;
     }
 
@@ -41,7 +42,7 @@ class SpotifyController extends Controller
 
         Auth::login($user);
 
-        return redirect('/');
+        return redirect()->route('personal');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -51,6 +52,6 @@ class SpotifyController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('home');
     }
 }

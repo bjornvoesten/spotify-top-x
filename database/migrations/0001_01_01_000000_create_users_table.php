@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('spotify_id');
             $table->string('spotify_token');
             $table->string('spotify_refresh_token');
+            $table->boolean('notify')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

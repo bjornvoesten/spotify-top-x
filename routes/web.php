@@ -1,17 +1,18 @@
 <?php
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\SpotifyController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', static function (Request $request) {
-    $user = $request->user();
-
-    return view('welcome', [
-        'user' => $user,
-    ]);
-});
+Route::get('/', HomeController::class)
+    ->name('home');
+Route::get('/personal', [PersonalController::class, 'show'])
+    ->middleware('auth:web')
+    ->name('personal');
+Route::patch('/personal', [PersonalController::class, 'notify'])
+    ->middleware('auth:web')
+    ->name('personal.notify');
 
 Route::get('/spotify/redirect', [SpotifyController::class, 'redirect'])
     ->name('spotify.redirect');

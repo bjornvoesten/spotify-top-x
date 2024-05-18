@@ -27,6 +27,7 @@ class UserFactory extends Factory
             'spotify_id' => fake()->uuid(),
             'spotify_token' => fake()->sha256(),
             'spotify_refresh_token' => fake()->sha256(),
+            'notify' => false,
         ];
     }
 }

@@ -1,0 +1,35 @@
+html {
+    margin: 0;
+}
+
+body {
+    margin: 0;
+    padding: 2em;
+    font-family: Montserrat, sans-serif;
+    line-height: 1.5em;
+}
+
+a {
+    color: #067ada;
+    text-decoration: none;
+}
+
+.btn {
+    background-color: #3490dc;
+    font-size: 1em;
+    color: white;
+    padding: 0.75em 1em;
+    line-height: 1rem;
+    border-radius: 5px;
+    border: 0;
+    cursor: pointer;
+    text-decoration: none;
+    border-bottom: 1px solid #067ada;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1em;
+
+    &:active {
+        background: #067ada;
+    }
+}
