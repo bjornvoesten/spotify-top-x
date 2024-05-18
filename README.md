@@ -1,4 +1,4 @@
-# Spotify Most Popular
+# Spotify Top X
 
 ## Installation
 
