@@ -10,7 +10,7 @@ Create a spotify app in [Spotify Developer Dashboard](https://developer.spotify.
 ```dotenv
 SPOTIFY_CLIENT_ID=
 SPOTIFY_CLIENT_SECRET=
-SPOTIFY_REDIRECT_URI=
+SPOTIFY_REDIRECT_URI=http://localhost/spotify/callback
 ```
 
 `sail up -d`
