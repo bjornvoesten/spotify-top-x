@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Actions\UpdateUserPopularArtists;
 use App\Actions\UpdateUserPopularTracks;
+use App\Models\User;
 use App\Notifications\SpotifyListUpdated;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
@@ -41,11 +42,9 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
-            if (! $user->notify) {
-                return;
-            }
-
-            $user->notify(new SpotifyListUpdated());
+            User::query()
+                ->where('notify', true)
+                ->each(fn (User $user) => $user->notify(new SpotifyListUpdated()));
         });
     }
 }

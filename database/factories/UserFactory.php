@@ -30,4 +30,9 @@ class UserFactory extends Factory
             'notify' => false,
         ];
     }
+
+    public function notify(bool $value = true): static
+    {
+        return $this->state(['notify' => $value]);
+    }
 }
